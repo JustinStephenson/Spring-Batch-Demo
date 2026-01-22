@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: spring-batch-demo
+
+  batch:
+    job:
+      enabled: false
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/spring_batch_demo
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migrations

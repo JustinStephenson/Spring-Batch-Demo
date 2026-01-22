@@ -1,0 +1,27 @@
+---
+version: '3'
+services:
+
+  # Postgresql database
+  db:
+    image: postgres
+    container_name: postgres
+    restart: on-failure
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: spring_batch_demo
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - 5432:5432
+
+  # Lets us view the db in url
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: on-failure
+    ports:
+      - 8083:8080
