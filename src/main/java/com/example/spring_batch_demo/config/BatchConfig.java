@@ -4,6 +4,8 @@ package com.example.spring_batch_demo.config;
 import com.example.spring_batch_demo.model.Customer;
 import com.example.spring_batch_demo.utils.DateUtils;
 import jakarta.persistence.EntityManagerFactory;
+import org.springframework.batch.core.configuration.annotation.JobScope;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
@@ -15,6 +17,7 @@ import org.springframework.batch.infrastructure.item.database.JpaItemWriter;
 import org.springframework.batch.infrastructure.item.database.builder.JpaItemWriterBuilder;
 import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
 import org.springframework.batch.infrastructure.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -24,11 +27,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class BatchConfig {
 
     @Bean
-    public FlatFileItemReader<Customer> reader() {
+    @StepScope
+    public FlatFileItemReader<Customer> reader(@Value("#{jobParameters['file']}") String filePath) {
         return new FlatFileItemReaderBuilder<Customer>()
             .linesToSkip(1)
             .name("csvItemReader")
-            .resource(new ClassPathResource("customers.csv"))
+            .resource(new ClassPathResource(filePath))
             .delimited()
             .delimiter(",")
             .names(new String[]{"index", "customerId", "firstName", "lastName", "company", "city", "country", "phone1", "phone2", "email", "subscriptionDate", "website"})
@@ -49,6 +53,7 @@ public class BatchConfig {
     }
 
     @Bean
+    @StepScope
     public JpaItemWriter<Customer> writer(EntityManagerFactory entityManagerFactory) {
         return new JpaItemWriterBuilder<Customer>()
             .entityManagerFactory(entityManagerFactory)
@@ -57,6 +62,7 @@ public class BatchConfig {
 
 
     @Bean
+    @JobScope
     public Step csvImporterStep(ItemReader<Customer> reader, ItemWriter<Customer> writer, JobRepository jobRepository,
                                 PlatformTransactionManager platformTransactionManager, CustomJobProcessor customJobProcessor) {
         return new StepBuilder("csvImporterStep", jobRepository)
